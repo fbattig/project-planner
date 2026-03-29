@@ -1,11 +1,14 @@
+import { AiGenerateButton } from './ai-generate-button';
 import type { WizardFormData, PhaseFormData } from './wizard-types';
 
 interface StepImplementationProps {
   data: WizardFormData;
   onPhasesChange: (phases: PhaseFormData[]) => void;
+  onGenerate: () => void;
+  generating: boolean;
 }
 
-export function StepImplementation({ data, onPhasesChange }: StepImplementationProps) {
+export function StepImplementation({ data, onPhasesChange, onGenerate, generating }: StepImplementationProps) {
   const addPhase = () => {
     onPhasesChange([...data.phases, { phase_title: '', phase_description: '' }]);
   };
@@ -37,6 +40,11 @@ export function StepImplementation({ data, onPhasesChange }: StepImplementationP
       <p className="text-sm text-[var(--color-text-muted)] mb-5">
         Break the project into sequential phases.
       </p>
+      <AiGenerateButton
+        onClick={onGenerate}
+        loading={generating}
+        disabled={!data.title.trim()}
+      />
 
       {data.phases.map((phase, i) => (
         <div

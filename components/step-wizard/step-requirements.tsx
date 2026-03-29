@@ -1,19 +1,27 @@
 import { FormField } from '@/components/ui/form-field';
 import { AiPromptCard } from './ai-prompt-card';
+import { AiGenerateButton } from './ai-generate-button';
 import type { WizardFormData } from './wizard-types';
 
 interface StepRequirementsProps {
   data: WizardFormData;
   onChange: (field: keyof WizardFormData, value: string) => void;
+  onGenerate: () => void;
+  generating: boolean;
 }
 
-export function StepRequirements({ data, onChange }: StepRequirementsProps) {
+export function StepRequirements({ data, onChange, onGenerate, generating }: StepRequirementsProps) {
   return (
     <div>
       <h2 className="text-lg font-semibold mb-1">Step 2: Gather Requirements</h2>
       <p className="text-sm text-[var(--color-text-muted)] mb-5">
         What must the system do? Who are the users?
       </p>
+      <AiGenerateButton
+        onClick={onGenerate}
+        loading={generating}
+        disabled={!data.title.trim()}
+      />
       <AiPromptCard
         projectTitle={data.title}
         scope={data.proposed_solution}

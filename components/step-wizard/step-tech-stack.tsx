@@ -1,18 +1,26 @@
 import { FormField } from '@/components/ui/form-field';
+import { AiGenerateButton } from './ai-generate-button';
 import type { WizardFormData } from './wizard-types';
 
 interface StepTechStackProps {
   data: WizardFormData;
   onChange: (field: keyof WizardFormData, value: string) => void;
+  onGenerate: () => void;
+  generating: boolean;
 }
 
-export function StepTechStack({ data, onChange }: StepTechStackProps) {
+export function StepTechStack({ data, onChange, onGenerate, generating }: StepTechStackProps) {
   return (
     <div>
       <h2 className="text-lg font-semibold mb-1">Step 4: Choose the Tech Stack</h2>
       <p className="text-sm text-[var(--color-text-muted)] mb-5">
         What technologies will you use and why?
       </p>
+      <AiGenerateButton
+        onClick={onGenerate}
+        loading={generating}
+        disabled={!data.title.trim()}
+      />
       <FormField
         label="Frontend"
         name="frontend"

@@ -1,12 +1,15 @@
 import { FormField } from '@/components/ui/form-field';
+import { AiGenerateButton } from './ai-generate-button';
 import type { WizardFormData } from './wizard-types';
 
 interface StepScopeProps {
   data: WizardFormData;
   onChange: (field: keyof WizardFormData, value: string) => void;
+  onGenerate: () => void;
+  generating: boolean;
 }
 
-export function StepScope({ data, onChange }: StepScopeProps) {
+export function StepScope({ data, onChange, onGenerate, generating }: StepScopeProps) {
   return (
     <div>
       <h2 className="text-lg font-semibold mb-1">Step 1: Define the Scope</h2>
@@ -21,6 +24,11 @@ export function StepScope({ data, onChange }: StepScopeProps) {
         required
         maxLength={120}
         placeholder="e.g., AI Help Desk"
+      />
+      <AiGenerateButton
+        onClick={onGenerate}
+        loading={generating}
+        disabled={!data.title.trim()}
       />
       <FormField
         label="Problem Statement"

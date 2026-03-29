@@ -10,6 +10,7 @@ import { StepMvp } from './step-mvp';
 import { StepTechStack } from './step-tech-stack';
 import { StepImplementation } from './step-implementation';
 import { ReferencePanel } from '@/components/reference-panel/reference-panel';
+import { generateStepContent } from '@/app/actions/ai-actions';
 import type { WizardFormData, PhaseFormData } from './wizard-types';
 import type { ActionResult } from '@/app/actions/project-actions';
 
@@ -39,6 +40,7 @@ export function WizardContent({ initialData, projectId, saveAction }: WizardCont
   const [formData, setFormData] = useState<WizardFormData>(initialData);
   const [error, setError] = useState<string | null>(null);
   const [isPending, startTransition] = useTransition();
+  const [generating, setGenerating] = useState(false);
   const [showRefOnMobile, setShowRefOnMobile] = useState(false);
 
   const handleFieldChange = useCallback(
@@ -52,6 +54,48 @@ export function WizardContent({ initialData, projectId, saveAction }: WizardCont
     setFormData((prev) => ({ ...prev, phases }));
   }, []);
 
+  const handleGenerate = useCallback(async () => {
+    setError(null);
+    setGenerating(true);
+
+    const contextFields: Record<string, string> = {
+      problem_statement: formData.problem_statement,
+      proposed_solution: formData.proposed_solution,
+      functional_requirements: formData.functional_requirements,
+      must_have_features: formData.must_have_features,
+      frontend: formData.frontend,
+      backend: formData.backend,
+      database: formData.database,
+    };
+
+    try {
+      const result = await generateStepContent(activeStep, formData.title, contextFields);
+
+      if (result.error) {
+        setError(result.error);
+        return;
+      }
+
+      if (result.data) {
+        setFormData((prev) => {
+          const updated = { ...prev };
+          for (const [key, value] of Object.entries(result.data!)) {
+            if (key === 'phases' && Array.isArray(value)) {
+              updated.phases = value as PhaseFormData[];
+            } else if (typeof value === 'string' && key in updated) {
+              (updated as Record<string, unknown>)[key] = value;
+            }
+          }
+          return updated;
+        });
+      }
+    } catch {
+      setError('AI generation failed. Please try again.');
+    } finally {
+      setGenerating(false);
+    }
+  }, [activeStep, formData]);
+
   const navigateToStep = (step: number) => {
     setActiveStep(step);
     const url = new URL(window.location.href);
@@ -63,13 +107,11 @@ export function WizardContent({ initialData, projectId, saveAction }: WizardCont
     setError(null);
     const fd = new FormData();
 
-    // Add all text fields
     const { phases, ...fields } = formData;
     for (const [key, value] of Object.entries(fields)) {
       fd.append(key, value);
     }
 
-    // Add phases
     phases.forEach((phase, i) => {
       fd.append(`phase_title_${i}`, phase.phase_title);
       fd.append(`phase_description_${i}`, phase.phase_description);
@@ -102,12 +144,45 @@ export function WizardContent({ initialData, projectId, saveAction }: WizardCont
       <div className="flex flex-col lg:flex-row gap-4">
         <div className="flex-1 min-w-0">
           <div className="rounded-[var(--radius-lg)] border border-[var(--color-border)] bg-[var(--color-bg-secondary)] p-5">
-            {activeStep === 1 && <StepScope data={formData} onChange={handleFieldChange} />}
-            {activeStep === 2 && <StepRequirements data={formData} onChange={handleFieldChange} />}
-            {activeStep === 3 && <StepMvp data={formData} onChange={handleFieldChange} />}
-            {activeStep === 4 && <StepTechStack data={formData} onChange={handleFieldChange} />}
+            {activeStep === 1 && (
+              <StepScope
+                data={formData}
+                onChange={handleFieldChange}
+                onGenerate={handleGenerate}
+                generating={generating}
+              />
+            )}
+            {activeStep === 2 && (
+              <StepRequirements
+                data={formData}
+                onChange={handleFieldChange}
+                onGenerate={handleGenerate}
+                generating={generating}
+              />
+            )}
+            {activeStep === 3 && (
+              <StepMvp
+                data={formData}
+                onChange={handleFieldChange}
+                onGenerate={handleGenerate}
+                generating={generating}
+              />
+            )}
+            {activeStep === 4 && (
+              <StepTechStack
+                data={formData}
+                onChange={handleFieldChange}
+                onGenerate={handleGenerate}
+                generating={generating}
+              />
+            )}
             {activeStep === 5 && (
-              <StepImplementation data={formData} onPhasesChange={handlePhasesChange} />
+              <StepImplementation
+                data={formData}
+                onPhasesChange={handlePhasesChange}
+                onGenerate={handleGenerate}
+                generating={generating}
+              />
             )}
             <WizardNavigation
               activeStep={activeStep}
