@@ -76,12 +76,20 @@ export default async function ViewProjectPage({
             </p>
           </div>
         </div>
-        <Link
-          href={`/projects/${project.id}/edit`}
-          className="rounded-[var(--radius-md)] bg-[var(--color-accent)] px-4 py-2 text-sm font-medium text-white hover:bg-[var(--color-accent-hover)] transition-colors"
-        >
-          Edit
-        </Link>
+        <div className="flex items-center gap-2">
+          <Link
+            href={`/projects/${project.id}/docs`}
+            className="rounded-[var(--radius-md)] border border-[var(--color-accent)]/30 bg-[var(--color-accent-subtle)] px-4 py-2 text-sm font-medium text-[var(--color-accent)] hover:bg-[var(--color-accent)] hover:text-white transition-colors flex items-center gap-1.5"
+          >
+            <span>&#9733;</span> Generate Claude Code Files
+          </Link>
+          <Link
+            href={`/projects/${project.id}/edit`}
+            className="rounded-[var(--radius-md)] bg-[var(--color-accent)] px-4 py-2 text-sm font-medium text-white hover:bg-[var(--color-accent-hover)] transition-colors"
+          >
+            Edit
+          </Link>
+        </div>
       </header>
       <main className="px-4 sm:px-6 py-6 max-w-4xl mx-auto space-y-6">
         {stepSections.map((section) => {
